@@ -135,7 +135,8 @@ ggplot(prog_df, aes(x = facility_type, fill = facility_type)) +
   )
 ```
 
-![](getting-started_files/figure-html/facility-type-plot-1.png)
+![Bar chart showing facility type distribution across five
+types](getting-started_files/figure-html/facility-type-plot-1.png)
 
 ## Quality Ratings
 
@@ -173,7 +174,8 @@ ggplot(rated_df, aes(x = facility_tier, fill = facility_tier)) +
   theme_minimal()
 ```
 
-![](getting-started_files/figure-html/tier-plot-1.png)
+![Bar chart showing quality tier distribution from Star 1 to Star
+5](getting-started_files/figure-html/tier-plot-1.png)
 
 ## Summary Statistics
 

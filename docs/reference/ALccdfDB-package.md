@@ -23,7 +23,3 @@ Useful links:
 
 **Maintainer**: JoonHo Lee <jlee296@ua.edu>
 ([ORCID](https://orcid.org/0009-0006-4019-8703))
-
-Authors:
-
-- Alison Hooper <alhooper2@ua.edu>

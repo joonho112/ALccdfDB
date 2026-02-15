@@ -181,7 +181,7 @@ distribution columns.</p>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Match rate: 33/50 (66%)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Processing Log</span></span>
-<span><span class="co">#&gt; [2026-02-15 15:16:02] Linked programs x enrolled: 33/50 programs matched (66%),</span></span>
+<span><span class="co">#&gt; [2026-02-15 15:55:55] Linked programs x enrolled: 33/50 programs matched (66%),</span></span>
 <span><span class="co">#&gt; 80 enrolled records</span></span></code></pre></div>
 <p>Inspect the new columns added by the linkage:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -261,7 +261,7 @@ Enrolled children by facility type
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Match rate: 32/50 (64%)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Processing Log</span></span>
-<span><span class="co">#&gt; [2026-02-15 15:16:03] Linked programs x clients: 32/50 programs matched (64%),</span></span>
+<span><span class="co">#&gt; [2026-02-15 15:55:56] Linked programs x clients: 32/50 programs matched (64%),</span></span>
 <span><span class="co">#&gt; 40 client records</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pc_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/alccdf_data.html">alccdf_data</a></span><span class="op">(</span><span class="va">linked_pc</span><span class="op">)</span></span>
@@ -301,7 +301,7 @@ Enrolled children by facility type
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Match rate: 28/50 (56%)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Processing Log</span></span>
-<span><span class="co">#&gt; [2026-02-15 15:16:03] Linked programs x staff: 28/50 programs matched (56%), 60</span></span>
+<span><span class="co">#&gt; [2026-02-15 15:55:56] Linked programs x staff: 28/50 programs matched (56%), 60</span></span>
 <span><span class="co">#&gt; staff records</span></span></code></pre></div>
 <p><strong>Figure 3: Mean Staff per Program by Facility
 Type</strong></p>
@@ -349,7 +349,7 @@ locations.</p>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Program columns appended: facility_id, facility_name, facility_type, facility_tier, facility_address, county, region, day_capacity, night_capacity, day_age_range, night_age_range, day_start, day_end, night_start, night_end, expiration_date, days_till_expire, license_number, snapshot_date</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Processing Log</span></span>
-<span><span class="co">#&gt; [2026-02-15 15:16:03] Linked clients x programs: 40/40 client rows matched</span></span>
+<span><span class="co">#&gt; [2026-02-15 15:55:56] Linked clients x programs: 40/40 client rows matched</span></span>
 <span><span class="co">#&gt; (100%), 19 program columns appended</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cp_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/alccdf_data.html">alccdf_data</a></span><span class="op">(</span><span class="va">linked_cp</span><span class="op">)</span></span>
@@ -494,14 +494,14 @@ via <code><a href="../reference/db_write_snapshot.html">db_write_snapshot()</a><
 <span><span class="co">#&gt;    county     n_programs avg_day_capacity</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> St. Clair           5               97</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Mobile              4               50</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Morgan              4               43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Calhoun             4               48</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Lee                 3               34</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Lauderdale          3              114</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Tuscaloosa          3               68</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Morgan              4               43</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Calhoun             4               48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Mobile              4               50</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Tuscaloosa          3               68</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> DeKalb              3               36</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Lauderdale          3              114</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Jefferson           3               63</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> DeKalb              3               36</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Lee                 3               34</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Shelby              2                6</span></span></code></pre></div>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Enrollment by care level: count and distinct cases</span></span>
@@ -570,7 +570,7 @@ or other tools:</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by <a href="https://orcid.org/0009-0006-4019-8703" class="external-link">JoonHo Lee</a>, Alison Hooper.</p>
+  <p>Developed by <a href="https://orcid.org/0009-0006-4019-8703" class="external-link">JoonHo Lee</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

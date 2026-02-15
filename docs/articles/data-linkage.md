@@ -118,7 +118,7 @@ linked_pe
 #> ℹ Match rate: 33/50 (66%)
 #> 
 #> ── Processing Log
-#> [2026-02-15 15:16:02] Linked programs x enrolled: 33/50 programs matched (66%),
+#> [2026-02-15 15:55:55] Linked programs x enrolled: 33/50 programs matched (66%),
 #> 80 enrolled records
 ```
 
@@ -210,7 +210,7 @@ linked_pc
 #> ℹ Match rate: 32/50 (64%)
 #> 
 #> ── Processing Log
-#> [2026-02-15 15:16:03] Linked programs x clients: 32/50 programs matched (64%),
+#> [2026-02-15 15:55:56] Linked programs x clients: 32/50 programs matched (64%),
 #> 40 client records
 ```
 
@@ -255,7 +255,7 @@ linked_ps
 #> ℹ Match rate: 28/50 (56%)
 #> 
 #> ── Processing Log
-#> [2026-02-15 15:16:03] Linked programs x staff: 28/50 programs matched (56%), 60
+#> [2026-02-15 15:55:56] Linked programs x staff: 28/50 programs matched (56%), 60
 #> staff records
 ```
 
@@ -307,7 +307,7 @@ linked_cp
 #> ℹ Program columns appended: facility_id, facility_name, facility_type, facility_tier, facility_address, county, region, day_capacity, night_capacity, day_age_range, night_age_range, day_start, day_end, night_start, night_end, expiration_date, days_till_expire, license_number, snapshot_date
 #> 
 #> ── Processing Log
-#> [2026-02-15 15:16:03] Linked clients x programs: 40/40 client rows matched
+#> [2026-02-15 15:55:56] Linked clients x programs: 40/40 client rows matched
 #> (100%), 19 program columns appended
 ```
 
@@ -471,14 +471,14 @@ db_query(conn, "
 #>    county     n_programs avg_day_capacity
 #>    <chr>           <dbl>            <dbl>
 #>  1 St. Clair           5               97
-#>  2 Mobile              4               50
-#>  3 Morgan              4               43
-#>  4 Calhoun             4               48
-#>  5 Lee                 3               34
-#>  6 Lauderdale          3              114
-#>  7 Tuscaloosa          3               68
+#>  2 Morgan              4               43
+#>  3 Calhoun             4               48
+#>  4 Mobile              4               50
+#>  5 Tuscaloosa          3               68
+#>  6 DeKalb              3               36
+#>  7 Lauderdale          3              114
 #>  8 Jefferson           3               63
-#>  9 DeKalb              3               36
+#>  9 Lee                 3               34
 #> 10 Shelby              2                6
 ```
 

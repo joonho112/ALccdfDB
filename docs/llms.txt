@@ -15,12 +15,10 @@ into analysis-ready linked datasets with DuckDB persistent storage.
 - **3 vignettes** with 12 inline figures
 - R CMD check: 0 errors, 0 warnings, 0 notes
 
-## Authors
+## Author
 
 JoonHo Lee, Ph.D. Assistant Professor, The University of Alabama
 <jlee296@ua.edu>
-
-Alison Hooper The University of Alabama <alhooper2@ua.edu>
 
 ## Modules
 
