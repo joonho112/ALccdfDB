@@ -1,0 +1,191 @@
+url: https://joonho112.github.io/ALccdfDB/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    pkgdown-nav-height: 80px
+
+home:
+  sidebar:
+    structure: [links, license, community, authors, dev]
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    github:
+      icon: fa-github
+      href: https://github.com/joonho112/ALccdfDB
+      aria-label: GitHub
+
+footer:
+  structure:
+    left: developed_by
+    right: built_with
+
+authors:
+  JoonHo Lee:
+    href: https://orcid.org/0009-0006-4019-8703
+
+articles:
+  - title: Guides
+    contents:
+    - getting-started
+    - full-pipeline
+    - data-linkage
+
+reference:
+  - title: Program Module
+    desc: Licensed childcare facility data processing
+    contents:
+    - program_config
+    - program_read
+    - program_read_all
+    - program_clean
+    - program_clean_all
+    - program_validate
+    - program_append_types
+    - program_deduplicate
+    - program_summary_stats
+    - program_export_csv
+    - program_export_excel
+    - program_export_stata
+    - program_export_parquet
+    - program_export_rds
+    - program_export_all
+
+  - title: Subsidy Module
+    desc: Enrolled children and client household records
+    contents:
+    - subsidy_read
+    - subsidy_clean
+    - subsidy_validate
+    - subsidy_summary_stats
+    - subsidy_export_csv
+    - subsidy_export_excel
+    - subsidy_export_stata
+    - subsidy_export_parquet
+    - subsidy_export_rds
+    - subsidy_export_all
+
+  - title: Staff Module
+    desc: Alabama Pathways staff registry
+    contents:
+    - staff_read
+    - staff_clean
+    - staff_validate
+    - staff_summary_stats
+    - staff_export_csv
+    - staff_export_excel
+    - staff_export_stata
+    - staff_export_parquet
+    - staff_export_rds
+    - staff_export_all
+
+  - title: Melissa Geocoding Module
+    desc: Melissa.com geocoding integration
+    contents:
+    - melissa_import_programs
+    - melissa_import_households
+    - melissa_merge_programs
+    - melissa_merge_households
+    - melissa_validate
+
+  - title: Linkage Module
+    desc: Cross-module joins and diagnostics
+    contents:
+    - linkage_programs_enrolled
+    - linkage_programs_clients
+    - linkage_programs_staff
+    - linkage_clients_programs
+    - linkage_report
+    - starts_with("linkage_programs_enrolled_export")
+    - starts_with("linkage_programs_clients_export")
+    - starts_with("linkage_programs_staff_export")
+    - starts_with("linkage_clients_programs_export")
+
+  - title: Database Module
+    desc: DuckDB persistent storage and SQL queries
+    contents:
+    - db_init
+    - db_close
+    - db_write_snapshot
+    - db_write_linked
+    - db_write_melissa
+    - db_read_snapshot
+    - db_read_latest
+    - db_read_melissa
+    - db_list_tables
+    - db_list_snapshots
+    - db_table_info
+    - db_query
+
+  - title: Synthetic Data
+    desc: Generators for examples and vignettes
+    contents:
+    - alccdf_synthetic_programs
+    - alccdf_synthetic_subsidy
+    - alccdf_synthetic_staff
+    - alccdf_synthetic_melissa
+
+  - title: Codebooks & Accessors
+    desc: Factor levels, data extraction, and codebook system
+    contents:
+    - alccdf_data
+    - alccdf_meta
+    - alccdf_facility_type_levels
+    - alccdf_facility_tier_levels
+
+  - title: Generic Export Functions
+    desc: Module-agnostic export helpers
+    contents:
+    - export_csv
+    - export_excel
+    - export_stata
+    - export_parquet
+    - export_rds
+    - export_all
+
+  - title: S3 Print Methods
+    desc: Display methods for ALccdfDB objects
+    contents:
+    - starts_with("print.alccdf_")
+
+  - title: internal
+    contents:
+    - db-core
+    - db-read
+    - db-write
+    - db-schema
+    - linkage-clients-programs
+    - linkage-programs-clients
+    - linkage-programs-enrolled
+    - linkage-programs-staff
+    - linkage-report
+    - melissa-import
+    - melissa-merge
+    - melissa-validate
+    - program-append
+    - program-clean
+    - program-config
+    - program-deduplicate
+    - program-export
+    - program-read
+    - program-validate
+    - staff-clean
+    - staff-export
+    - staff-read
+    - staff-validate
+    - subsidy-clean
+    - subsidy-export
+    - subsidy-read
+    - subsidy-validate
+    - synthetic-data
+    - utils-address
+    - utils-export
+    - utils-helpers
+    - utils-messaging
+    - utils-validation
+    - ALccdfDB-package

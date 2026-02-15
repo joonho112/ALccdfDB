@@ -1,0 +1,6 @@
+"Staff Name","User ZIP","User County","Facility Name","Facility County","Provider Type","Currently Operating","Position","Career Lattice Level","User Email"
+"Alice Johnson","36101","montgomery","Test Center A","Montgomery","Center","Yes","Teacher","Level 3","alice@test.com"
+"Bob Williams","35201","jefferson","Test Center A","Montgomery","Center","Yes","Director","Level 5","bob@test.com"
+"Carol Davis","35801","madison","Test Center B","Jefferson","Center","Yes","Teacher","Level 2","carol@test.com"
+"Dan Miller","36301","houston","Jones Group Home","Houston","Group Home","No","Assistant","Level 1","dan@test.com"
+"Eve Brown","36602","mobile","Jones Group Home","Mobile","Group Home","Yes","Teacher","Level 4","eve@test.com"

@@ -1,0 +1,417 @@
+---
+title: "Complete Data Processing Pipeline"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Complete Data Processing Pipeline}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Overview
+
+This vignette demonstrates the end-to-end ALccdfDB workflow across all three
+data modules: **programs**, **subsidy**, and **staff**. Starting from synthetic
+data generation, we walk through data inspection, visualization, validation,
+summary statistics, and export. Every function call shown here mirrors the
+exact steps you would use with real Alabama CCDF administrative data files.
+
+## Setup
+
+```{r load-packages, message = FALSE, warning = FALSE}
+library(ALccdfDB)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+## Generate Synthetic Data
+
+ALccdfDB provides synthetic data generators that produce realistic datasets
+matching the structure and column types of real administrative data. Using a
+shared seed ensures facility identities are consistent across modules, enabling
+cross-module linkage.
+
+```{r generate-data}
+programs <- alccdf_synthetic_programs(n = 50, seed = 42)
+subsidy  <- alccdf_synthetic_subsidy(n_enrolled = 80, n_clients = 40, seed = 42)
+staff    <- alccdf_synthetic_staff(n = 60, seed = 42)
+```
+
+---
+
+## Program Module
+
+The program module is the backbone of the CCDF data system. It contains
+facility-level information including type, tier rating, capacity, operating
+hours, age ranges served, and quality-adjusted capacity measures.
+
+### Data Structure
+
+The program object is an S3 object with `$data`, `$meta`, and `$diagnostics`
+components. Use `alccdf_data()` to extract the underlying tibble.
+
+```{r program-structure}
+programs
+```
+
+```{r program-str}
+str(alccdf_data(programs)[, 1:15], give.attr = FALSE)
+```
+
+### Facility Type Distribution
+
+Alabama child care programs fall into five categories: Centers (the most
+common), Family Homes, Group Homes, Faith-Based (exempt), and Excepted
+(university/other) programs.
+
+```{r fig-1-facility-types, fig.cap = "Figure 1: Distribution of facility types"}
+prog_df <- alccdf_data(programs)
+
+type_counts <- prog_df %>%
+  count(facility_type) %>%
+  arrange(n)
+
+ggplot(type_counts, aes(x = reorder(facility_type, n), y = n)) +
+  geom_col(fill = "steelblue") +
+  geom_text(aes(label = n), hjust = -0.2, size = 3.5) +
+  coord_flip() +
+  labs(
+    title = "Number of Facilities by Type",
+    x = NULL,
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+### Day Capacity by Facility Type
+
+Capacity varies substantially by facility type. Centers tend to have the
+largest capacities, while Family Homes are capped at much smaller numbers.
+
+```{r fig-2-capacity-boxplot, fig.cap = "Figure 2: Day capacity distribution by facility type"}
+ggplot(prog_df, aes(x = facility_type, y = day_capacity)) +
+  geom_boxplot(fill = "lightblue", outlier.colour = "red", outlier.size = 2) +
+  labs(
+    title = "Day Capacity by Facility Type",
+    x = "Facility Type",
+    y = "Day Capacity"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1),
+    plot.title = element_text(face = "bold")
+  )
+```
+
+### Tier Distribution by Facility Type
+
+The Alabama Quality STARS rating system assigns tiers (Star 1 through Star 5)
+to eligible programs. Faith-Based and Excepted programs are not rated, so we
+exclude NA tiers for this view.
+
+```{r fig-3-tier-proportions, fig.cap = "Figure 3: Tier proportions by facility type"}
+tier_df <- prog_df %>%
+  filter(!is.na(facility_tier))
+
+ggplot(tier_df, aes(x = facility_type, fill = facility_tier)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "YlOrRd", name = "Tier") +
+  labs(
+    title = "Tier Proportions by Facility Type",
+    x = "Facility Type",
+    y = "Proportion"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1),
+    plot.title = element_text(face = "bold")
+  )
+```
+
+### Quality Weight Comparison by Tier
+
+ALccdfDB computes three quality-adjusted capacity measures using different
+weighting schemes: linear (proportional to tier), binary (high-quality vs. not),
+and exponential (accelerating reward for higher tiers).
+
+```{r quality-weight-table}
+quality_table <- prog_df %>%
+  filter(!is.na(facility_tier)) %>%
+  group_by(facility_tier) %>%
+  summarise(
+    n = n(),
+    mean_capacity   = round(mean(day_capacity, na.rm = TRUE), 1),
+    mean_qa_linear  = round(mean(capacity_qa_linear, na.rm = TRUE), 1),
+    mean_qa_binary  = round(mean(capacity_qa_binary, na.rm = TRUE), 1),
+    .groups = "drop"
+  )
+
+knitr::kable(
+  quality_table,
+  caption = "Quality-adjusted capacity by tier",
+  col.names = c("Tier", "N", "Mean Capacity", "QA Linear", "QA Binary")
+)
+```
+
+### Age Group Coverage
+
+Each program serves one or more age groups. The three binary indicators
+(`day_age_infants_toddlers`, `day_age_preschool`, `day_age_school_aged`)
+identify which populations each facility covers.
+
+```{r fig-4-age-coverage, fig.cap = "Figure 4: Age group coverage across facilities"}
+age_long <- prog_df %>%
+  select(facility_id, day_age_infants_toddlers, day_age_preschool,
+         day_age_school_aged) %>%
+  pivot_longer(
+    cols = c(day_age_infants_toddlers, day_age_preschool, day_age_school_aged),
+    names_to = "age_group",
+    values_to = "serves"
+  ) %>%
+  mutate(
+    age_group = case_when(
+      age_group == "day_age_infants_toddlers" ~ "Infants & Toddlers",
+      age_group == "day_age_preschool"        ~ "Preschool",
+      age_group == "day_age_school_aged"      ~ "School Aged"
+    )
+  )
+
+age_summary <- age_long %>%
+  group_by(age_group) %>%
+  summarise(n_serving = sum(serves, na.rm = TRUE), .groups = "drop")
+
+ggplot(age_summary, aes(x = reorder(age_group, n_serving), y = n_serving)) +
+  geom_col(fill = "darkorange") +
+  geom_text(aes(label = n_serving), hjust = -0.2, size = 3.5) +
+  coord_flip() +
+  labs(
+    title = "Number of Facilities Serving Each Age Group",
+    x = NULL,
+    y = "Number of Facilities"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+---
+
+## Subsidy Module
+
+The subsidy module handles two related datasets: **enrolled children**
+(placement-level records linking children to providers) and **clients**
+(family-level records with funding and copayment details). Both use PII
+separation to keep sensitive fields isolated from analytic data.
+
+### Enrolled Children
+
+```{r subsidy-enrolled-print}
+enrolled <- subsidy$enrolled
+enrolled
+```
+
+```{r subsidy-enrolled-head}
+head(alccdf_data(enrolled))
+```
+
+### PII Separation
+
+A key design principle in ALccdfDB is that personally identifiable information
+(names, SSNs) is stored in a separate `$pii` table, never in the main `$data`
+tibble. This allows analysts to work with the data without inadvertent exposure
+of sensitive fields.
+
+```{r pii-separation}
+cat("Data columns:", ncol(alccdf_data(enrolled)), "\n")
+cat("PII columns: ", ncol(enrolled$pii), "\n")
+cat("PII field names:", paste(names(enrolled$pii), collapse = ", "), "\n")
+```
+
+### Care Level Distribution
+
+The `care_level` field classifies children into four developmental categories
+based on age: Infant, Toddler, PreSchool, and School Age.
+
+```{r fig-5-care-level, fig.cap = "Figure 5: Care level distribution among enrolled children"}
+enrolled_df <- alccdf_data(enrolled)
+
+care_counts <- enrolled_df %>%
+  count(care_level) %>%
+  arrange(desc(n))
+
+ggplot(care_counts, aes(x = reorder(care_level, n), y = n)) +
+  geom_col(fill = "mediumpurple") +
+  geom_text(aes(label = n), hjust = -0.2, size = 3.5) +
+  coord_flip() +
+  labs(
+    title = "Enrolled Children by Care Level",
+    x = NULL,
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+---
+
+## Staff Module
+
+The staff module tracks child care workforce data including position, career
+lattice level, provider affiliation, and residential location. Like the
+subsidy module, it separates PII (staff names, email addresses) from
+analytic fields.
+
+### Staff Data Overview
+
+```{r staff-print}
+staff
+```
+
+```{r staff-head}
+head(alccdf_data(staff))
+```
+
+### Career Lattice Level Distribution
+
+Alabama's career lattice system classifies child care professionals into
+five levels reflecting education, training, and experience.
+
+```{r fig-6-career-level, fig.cap = "Figure 6: Staff distribution by career lattice level"}
+staff_df <- alccdf_data(staff)
+
+career_counts <- staff_df %>%
+  count(career_lattice_level) %>%
+  arrange(career_lattice_level)
+
+ggplot(career_counts, aes(x = career_lattice_level, y = n)) +
+  geom_col(fill = "seagreen") +
+  geom_text(aes(label = n), vjust = -0.3, size = 3.5) +
+  labs(
+    title = "Staff by Career Lattice Level",
+    x = "Career Lattice Level",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+### Position Distribution
+
+```{r position-table}
+position_table <- staff_df %>%
+  count(position) %>%
+  arrange(desc(n)) %>%
+  mutate(pct = round(n / sum(n) * 100, 1))
+
+knitr::kable(
+  position_table,
+  caption = "Staff distribution by position",
+  col.names = c("Position", "N", "Percent")
+)
+```
+
+---
+
+## Validation Framework
+
+ALccdfDB includes validation functions for each module that run a battery of
+data quality checks. Each validator returns a structured result object
+reporting PASS, WARN, ERROR, and INFO statuses across multiple checks.
+
+```{r validation}
+prog_validation <- program_validate(programs, verbose = FALSE)
+prog_validation
+```
+
+Subsidy and staff modules have their own validators with checks tailored
+to their data structures.
+
+```{r validation-subsidy-staff}
+sub_validation   <- subsidy_validate(enrolled, verbose = FALSE)
+staff_validation <- staff_validate(staff, verbose = FALSE)
+
+sub_validation
+staff_validation
+```
+
+---
+
+## Export
+
+ALccdfDB supports five output formats for each module: CSV, Excel, Stata
+(.dta), Parquet, and RDS. Subsidy and staff exports default to PII-excluded
+mode for safety.
+
+```{r export, eval = FALSE}
+# Program exports
+program_export_csv(programs, "output/programs.csv")
+program_export_excel(programs, "output/programs.xlsx")
+program_export_stata(programs, "output/programs.dta")
+program_export_parquet(programs, "output/programs.parquet")
+program_export_rds(programs, "output/programs.rds")
+
+# Subsidy exports (PII excluded by default)
+subsidy_export_csv(enrolled, "output/enrolled.csv")
+subsidy_export_excel(enrolled, "output/enrolled.xlsx")
+
+# Staff exports (PII excluded by default)
+staff_export_csv(staff, "output/staff.csv")
+staff_export_excel(staff, "output/staff.xlsx")
+
+# Export all formats at once
+program_export_all(programs, dir = "output", basename = "programs_2025")
+```
+
+---
+
+## Real Data Workflow
+
+When working with actual DHR administrative files, the workflow starts with
+configuration and reads from Excel source files. The pipeline follows the
+sequence: **configure --> read --> clean --> append --> validate --> export**.
+
+```{r real-workflow, eval = FALSE}
+# 1. Configure the pipeline with file paths and snapshot date
+cfg <- program_config(
+  snapshot_date = "2025-06-11",
+  center_path   = "data-raw/Centers_06_11_25.xlsx",
+  home_path     = "data-raw/FamilyGroupHomes_06_11_25.xlsx",
+  exempt_path   = "data-raw/ExemptCenters_06_11_25.xlsx",
+  excepted_path = "data-raw/ExceptedPrograms_06_11_25.xlsx",
+  output_dir    = "output/2025-06-11"
+)
+
+# 2. Read all program types from Excel
+raw_list <- program_read_all(cfg)
+
+# 3. Clean all program types
+clean_list <- program_clean_all(raw_list)
+
+# 4. Append into a unified dataset
+unified <- program_append_types(clean_list)
+
+# 5. Validate
+validation <- program_validate(unified)
+
+# 6. Summary statistics
+stats <- program_summary_stats(unified)
+stats$overview
+stats$by_type
+
+# 7. Export to all formats
+program_export_all(
+  unified,
+  dir      = "output/2025-06-11",
+  basename = "all_programs_2025-06-11"
+)
+```

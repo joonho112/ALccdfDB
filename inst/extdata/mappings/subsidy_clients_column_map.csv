@@ -1,0 +1,15 @@
+raw_name,clean_name,description
+County,county,Alabama county name
+Parent Name,parent_name,Parent full name (PII)
+Parent DOB,parent_dob,Parent date of birth (PII)
+Family Address,family_address,Family residential address
+Eligibility/Funding Type,funding_type,Eligibility/funding type
+Case ID,case_id,Subsidy case identifier
+Child Name,child_name,Child full name (PII)
+Child DOB,child_dob,Child date of birth
+Child Age,child_age,Child age
+Provider ID,provider_id,Provider identifier
+Provider Name,provider_name,Provider name
+Provider Address,provider_address,Provider address
+Placement Effective Date,placement_date,Placement effective date
+Weekly Copayment Amount,copay_weekly,Weekly copayment amount

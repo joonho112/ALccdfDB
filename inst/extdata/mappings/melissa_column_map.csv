@@ -1,0 +1,26 @@
+raw_name,clean_name,description
+source,source,Data source identifier (program/household)
+random_id,random_id,Random de-identified ID
+county,county,County name
+address,address_original,Original address submitted
+facility_name,facility_name,Facility name (programs only)
+MD_AddressLine1,melissa_address1,Melissa standardized address line 1
+MD_AddressLine2,melissa_address2,Melissa standardized address line 2
+MD_City,melissa_city,Melissa city
+MD_State,melissa_state,Melissa state
+MD_PostalCode,melissa_zip,Melissa postal code
+MD_Results,melissa_results,Melissa match results
+GEOZIP,geo_zip,Geographic ZIP code
+PLUS4,plus4,ZIP+4 code
+DPB,dpb,Delivery point barcode
+LAT,latitude,Latitude coordinate
+LNG,longitude,Longitude coordinate
+CT,census_tract,Census tract FIPS code
+CENSUSBLOC,census_block,Census block FIPS code
+FIPS,fips_code,County FIPS code
+COUNTYNAME,county_melissa,Melissa county name
+PLACENAME,place_name,Census place name
+PLACECODE,place_code,Census place code
+RESULTCODE,result_code,Melissa result code
+STATUSCODE,status_code,Melissa status code
+ERRORCODE,error_code,Melissa error code

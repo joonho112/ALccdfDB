@@ -1,0 +1,22 @@
+raw_name,clean_name,description
+Region,region,DHR administrative region
+County,county,Alabama county name
+Provider ID,provider_id,Provider identifier
+Facility ID,facility_id,Unique facility identifier
+Type of the Facility/Provider,facility_type_raw,Raw facility/provider type
+License Number,license_number,DHR license number
+Center Name,facility_name,Name of the center
+Facility Tier,facility_tier,QRIS star rating tier
+Licensee Address,facility_address,Center address
+Phone Number,phone_number,Facility phone number
+Director's name,director_name,Center director name
+Consultant,consultant,DHR consultant assigned
+Expiration Date,expiration_date,License expiration date
+Day Start,day_start,Day operation start time
+Day End,day_end,Day operation end time
+Day Capacity,day_capacity,Licensed day capacity
+Day Age Range,day_age_range,Day care age range text
+Night Start,night_start,Night operation start time
+Night End,night_end,Night operation end time
+Night Capacity,night_capacity,Licensed night capacity
+Night Age Range,night_age_range,Night care age range text

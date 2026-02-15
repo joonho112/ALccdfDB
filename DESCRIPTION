@@ -1,0 +1,54 @@
+Package: ALccdfDB
+Type: Package
+Title: Alabama CCDF Administrative Data Cleaning and Management
+Version: 1.0.0
+Authors@R:
+    person("JoonHo", "Lee",
+           email = "jlee296@ua.edu",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0009-0006-4019-8703"))
+Description: A modular toolkit for cleaning, validating, linking, and managing
+    Alabama CCDF (Child Care and Development Fund) administrative records from
+    the Alabama Department of Human Resources (DHR). Features data-driven column
+    mapping for heterogeneous Excel report formats, purpose-built cross-module
+    linkage with diagnostics, Melissa.com geocoding integration (lat/lng,
+    census tract, FIPS), proper factor levels for categorical variables,
+    DuckDB-based persistent storage, and multiple export formats (CSV, Excel,
+    Stata, Parquet, RDS).
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+URL: https://joonho112.github.io/ALccdfDB/,
+    https://github.com/joonho112/ALccdfDB
+BugReports: https://github.com/joonho112/ALccdfDB/issues
+Depends:
+    R (>= 4.1.0)
+Imports:
+    dplyr (>= 1.1.0),
+    tidyr (>= 1.3.0),
+    readxl (>= 1.4.0),
+    stringr (>= 1.5.0),
+    cli (>= 3.6.0),
+    rlang (>= 1.1.0),
+    glue (>= 1.6.0),
+    purrr (>= 1.0.0),
+    tibble (>= 3.2.0),
+    lubridate (>= 1.9.0)
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    arrow,
+    openxlsx,
+    haven,
+    withr,
+    duckdb (>= 1.0.0),
+    DBI (>= 1.2.0),
+    readr,
+    ggplot2,
+    scales,
+    pkgdown
+Config/testthat/edition: 3
+VignetteBuilder: knitr

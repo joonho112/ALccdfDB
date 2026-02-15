@@ -1,0 +1,353 @@
+---
+title: "Cross-Module Linkage and Database Integration"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Cross-Module Linkage and Database Integration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+has_duckdb <- requireNamespace("duckdb", quietly = TRUE) &&
+              requireNamespace("DBI", quietly = TRUE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Overview
+
+ALccdfDB links four administrative data modules into enriched, analysis-ready
+datasets. The linkage layer connects programs to enrolled children (by
+`facility_id`), to subsidy clients (by `provider_id`), and to Alabama Pathways
+staff records (by `facility_name`, case-insensitive). A reverse linkage also
+appends program attributes onto individual client rows for spatial analysis.
+
+Four linkage types are available:
+
+- **Programs x Enrolled** -- aggregate enrollment counts onto programs
+- **Programs x Clients** -- aggregate client counts and copay onto programs
+- **Programs x Staff** -- aggregate staff counts and career levels onto programs
+- **Clients x Programs** -- append program attributes onto client rows
+
+This vignette also demonstrates Melissa geocoding output and DuckDB integration
+for persistent storage and SQL-based querying.
+
+## Setup and Data Generation
+
+All synthetic generators share a common facility pool when called with the same
+seed, ensuring that `facility_id`, `provider_id`, and `facility_name` overlap
+across modules to enable linkage.
+
+```{r data-generation}
+library(ALccdfDB)
+library(dplyr)
+library(ggplot2)
+
+seed <- 42
+programs <- alccdf_synthetic_programs(n = 50, seed = seed)
+subsidy  <- alccdf_synthetic_subsidy(n_enrolled = 80, n_clients = 40, seed = seed)
+staff    <- alccdf_synthetic_staff(n = 60, seed = seed)
+melissa  <- alccdf_synthetic_melissa(programs = programs, seed = seed)
+```
+
+## Verify Shared Keys
+
+Before running linkage, verify that the shared join keys overlap across modules.
+
+```{r verify-keys}
+prg_data <- alccdf_data(programs)
+enr_data <- alccdf_data(subsidy$enrolled)
+cli_data <- alccdf_data(subsidy$clients)
+stf_data <- alccdf_data(staff)
+
+# facility_id overlap (programs <-> enrolled)
+prg_fids <- unique(prg_data$facility_id)
+enr_fids <- unique(enr_data$facility_id)
+cat("Programs facility_ids:", length(prg_fids), "\n")
+cat("Enrolled facility_ids:", length(enr_fids), "\n")
+cat("Overlap (facility_id):", length(intersect(prg_fids, enr_fids)), "\n\n")
+
+# provider_id overlap (programs <-> clients)
+prg_pids <- unique(prg_data$provider_id)
+cli_pids <- unique(cli_data$provider_id)
+cat("Programs provider_ids:", length(prg_pids), "\n")
+cat("Clients provider_ids:", length(cli_pids), "\n")
+cat("Overlap (provider_id):", length(intersect(prg_pids, cli_pids)), "\n\n")
+
+# facility_name overlap (programs <-> staff, case-insensitive)
+prg_names <- unique(tolower(trimws(prg_data$facility_name)))
+stf_names <- unique(tolower(trimws(stf_data$facility_name)))
+cat("Programs facility_names:", length(prg_names), "\n")
+cat("Staff facility_names:", length(stf_names), "\n")
+cat("Overlap (facility_name):", length(intersect(prg_names, stf_names)), "\n")
+```
+
+## Programs x Enrolled Children
+
+Link programs to enrolled children by `facility_id`. Each program row is
+preserved (LEFT JOIN) and enriched with enrollment aggregates: the number of
+enrolled children, case counts, and care level distribution columns.
+
+```{r link-programs-enrolled}
+linked_pe <- linkage_programs_enrolled(programs, subsidy$enrolled, verbose = FALSE)
+linked_pe
+```
+
+Inspect the new columns added by the linkage:
+
+```{r pe-new-cols}
+pe_df <- alccdf_data(linked_pe)
+new_cols <- c("n_enrolled_children", "n_cases",
+              grep("^care_level_", names(pe_df), value = TRUE))
+head(pe_df[, intersect(c("facility_id", "facility_name", new_cols), names(pe_df))], 10)
+```
+
+**Figure 1: Distribution of Enrolled Children per Program**
+
+```{r fig-enrolled-hist, fig.cap = "Distribution of enrolled children per program"}
+pe_plot <- pe_df[!is.na(pe_df$n_enrolled_children), ]
+
+ggplot(pe_plot, aes(x = n_enrolled_children)) +
+  geom_histogram(binwidth = 1, fill = "#4292C6", color = "white") +
+  labs(
+    title = "Enrolled Children per Program",
+    x = "Number of Enrolled Children",
+    y = "Count of Programs"
+  ) +
+  theme_minimal()
+```
+
+**Figure 2: Enrolled Children by Facility Type**
+
+```{r fig-enrolled-boxplot, fig.cap = "Enrolled children by facility type"}
+ggplot(pe_plot, aes(x = facility_type, y = n_enrolled_children)) +
+  geom_boxplot(fill = "#9ECAE1", outlier.color = "#084594") +
+  labs(
+    title = "Enrolled Children by Facility Type",
+    x = "Facility Type",
+    y = "Number of Enrolled Children"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+## Programs x Clients
+
+Link programs to subsidy clients (Active Clients With Addresses) by
+`provider_id`. Aggregated columns include `n_active_clients`,
+`avg_copay_weekly`, and `n_unique_cases`.
+
+```{r link-programs-clients}
+linked_pc <- linkage_programs_clients(programs, subsidy$clients, verbose = FALSE)
+linked_pc
+```
+
+```{r pc-new-cols}
+pc_df <- alccdf_data(linked_pc)
+head(pc_df[, c("facility_id", "facility_name", "n_active_clients",
+               "avg_copay_weekly", "n_unique_cases")], 10)
+```
+
+## Programs x Staff
+
+Link programs to Alabama Pathways staff data by `facility_name`
+(case-insensitive, whitespace-trimmed). Adds `n_staff` and career lattice level
+distribution columns.
+
+```{r link-programs-staff}
+linked_ps <- linkage_programs_staff(programs, staff, verbose = FALSE)
+linked_ps
+```
+
+**Figure 3: Mean Staff per Program by Facility Type**
+
+```{r fig-staff-bar, fig.cap = "Mean staff count per program by facility type"}
+ps_df <- alccdf_data(linked_ps)
+
+staff_summary <- aggregate(n_staff ~ facility_type, data = ps_df, FUN = mean)
+staff_summary$n_staff <- round(staff_summary$n_staff, 1)
+
+ggplot(staff_summary, aes(x = reorder(facility_type, n_staff), y = n_staff)) +
+  geom_col(fill = "#74C476") +
+  geom_text(aes(label = n_staff), hjust = -0.2, size = 3.5) +
+  coord_flip() +
+  labs(
+    title = "Mean Staff per Program by Facility Type",
+    x = "Facility Type",
+    y = "Mean Number of Staff"
+  ) +
+  theme_minimal()
+```
+
+## Clients x Programs
+
+The reverse linkage appends program-level attributes (facility type, tier,
+coordinates, capacity, etc.) onto individual client rows. This is useful for
+spatial analysis comparing household and program locations.
+
+```{r link-clients-programs}
+linked_cp <- linkage_clients_programs(subsidy$clients, programs, verbose = FALSE)
+linked_cp
+```
+
+```{r cp-preview}
+cp_df <- alccdf_data(linked_cp)
+prog_cols <- intersect(
+  c("provider_id", "family_address", "facility_name", "facility_type", "county"),
+  names(cp_df)
+)
+head(cp_df[, prog_cols], 8)
+```
+
+## Linkage Diagnostics Summary
+
+Compare match rates across all four linkage types. The summary is built manually
+since the metadata structure differs between linkage types.
+
+```{r diagnostics-summary}
+diag_summary <- tibble::tibble(
+  Linkage = c(
+    "Programs x Enrolled",
+    "Programs x Clients",
+    "Programs x Staff",
+    "Clients x Programs"
+  ),
+  Join_Key = c(
+    "facility_id",
+    "provider_id",
+    "facility_name",
+    "provider_id"
+  ),
+  n_matched = c(
+    linked_pe$meta$n_matched,
+    linked_pc$meta$n_matched,
+    linked_ps$meta$n_matched,
+    linked_cp$meta$n_matched
+  ),
+  n_total = c(
+    linked_pe$meta$n_programs,
+    linked_pc$meta$n_programs,
+    linked_ps$meta$n_programs,
+    linked_cp$meta$n_linked
+  ),
+  match_rate_pct = c(
+    linked_pe$meta$match_rate,
+    linked_pc$meta$match_rate,
+    linked_ps$meta$match_rate,
+    linked_cp$meta$match_rate
+  )
+)
+
+diag_summary
+```
+
+## Melissa Geocoding
+
+The Melissa geocoding module provides latitude, longitude, census tract, FIPS
+code, and address standardization for both program and household addresses. The
+synthetic generator produces realistic Alabama coordinates within the state
+bounding box.
+
+```{r melissa-programs}
+head(melissa$programs, 8)
+```
+
+**Figure 4: Geocoded Program Locations**
+
+```{r fig-melissa-scatter, fig.cap = "Scatter plot of geocoded program locations across Alabama"}
+ggplot(melissa$programs, aes(x = longitude, y = latitude)) +
+  geom_point(color = "#E6550D", alpha = 0.7, size = 2.5) +
+  labs(
+    title = "Geocoded Program Locations",
+    subtitle = "Synthetic Melissa output for Alabama CCDF programs",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal()
+```
+
+## DuckDB Integration
+
+Store processed data in a DuckDB database for efficient querying and persistent
+snapshots. The database module supports writing any S3 object via
+`db_write_snapshot()` and querying with standard SQL.
+
+```{r duckdb-init, eval = has_duckdb}
+db_path <- tempfile(fileext = ".duckdb")
+conn <- db_init(db_path, verbose = FALSE)
+```
+
+```{r duckdb-write, eval = has_duckdb}
+# Write program, enrolled, and staff snapshots
+db_write_snapshot(conn, programs, "programs", verbose = FALSE)
+db_write_snapshot(conn, subsidy$enrolled, "enrolled", verbose = FALSE)
+db_write_snapshot(conn, staff, "staff", verbose = FALSE)
+
+ALccdfDB::db_list_tables(conn)
+```
+
+### SQL Queries
+
+```{r duckdb-query1, eval = has_duckdb}
+# Programs by county: count and average day capacity
+db_query(conn, "
+  SELECT county, COUNT(*) AS n_programs,
+         ROUND(AVG(day_capacity), 0) AS avg_day_capacity
+  FROM programs
+  GROUP BY county
+  ORDER BY n_programs DESC
+  LIMIT 10
+", verbose = FALSE)
+```
+
+```{r duckdb-query2, eval = has_duckdb}
+# Enrollment by care level: count and distinct cases
+db_query(conn, "
+  SELECT care_level, COUNT(*) AS n_records,
+         COUNT(DISTINCT case_id) AS n_cases
+  FROM enrolled
+  GROUP BY care_level
+  ORDER BY n_records DESC
+", verbose = FALSE)
+```
+
+```{r duckdb-info, eval = has_duckdb}
+# Column metadata for the programs table
+db_table_info(conn, "programs")
+```
+
+```{r duckdb-close, eval = has_duckdb}
+db_close(conn)
+unlink(db_path)
+```
+
+```{r duckdb-note, eval = !has_duckdb, echo = FALSE, results = "asis"}
+cat("*Note: DuckDB examples skipped because the `duckdb` package is not installed.*
+Install it with `install.packages('duckdb')` to enable database features.")
+```
+
+## Export
+
+Export linked datasets to multiple formats for use in Stata, Excel, or other
+tools:
+
+```{r export, eval = FALSE}
+# CSV
+linkage_programs_enrolled_export_csv(linked_pe, "output/linkage/programs_enrolled.csv")
+
+# Excel
+linkage_programs_enrolled_export_excel(linked_pe, "output/linkage/programs_enrolled.xlsx")
+
+# Stata
+linkage_programs_enrolled_export_stata(linked_pe, "output/linkage/programs_enrolled.dta")
+
+# RDS (preserves S3 classes and factor levels)
+linkage_programs_enrolled_export_rds(linked_pe, "output/linkage/programs_enrolled.rds")
+
+# All formats at once
+linkage_programs_enrolled_export_all(linked_pe, "output/linkage/", "programs_enrolled")
+```

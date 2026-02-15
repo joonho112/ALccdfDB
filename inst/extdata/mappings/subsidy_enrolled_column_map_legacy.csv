@@ -1,0 +1,19 @@
+raw_name,clean_name,description
+Region,region,DHR administrative region
+County,county,Alabama county name
+Case ID,case_id,Subsidy case identifier
+Parent Name,parent_name,Parent full name (PII)
+Parent DOB,parent_dob,Parent date of birth (PII)
+Child Name,child_name,Child full name (PII)
+Child DOB,child_dob,Child date of birth
+Age,child_age,Child age
+Care Level,care_level,Level of care
+Eligibility Category,eligibility_category,Subsidy eligibility category
+Eligibility Begin Date,eligibility_begin_date,Eligibility start date
+Eligibility End Date,eligibility_end_date,Eligibility end date
+Placement Start Date,placement_start_date,Placement start date
+Placement End Date,placement_end_date,Placement end date
+Provider ID,provider_id,Provider identifier
+Facility ID,facility_id,Facility identifier
+Facility Name,facility_name,Facility name
+Unit Of Care,unit_of_care,Unit of care type

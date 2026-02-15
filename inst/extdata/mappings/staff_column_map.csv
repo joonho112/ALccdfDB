@@ -1,0 +1,11 @@
+raw_name,clean_name,description
+Name,staff_name,Staff member name (PII)
+User Zip code,user_zip,Staff member zip code
+User County,user_county,Staff member county
+UserEmail,user_email,Staff member email (PII)
+Facility Name,facility_name,Facility name
+Facility County,facility_county,Facility county
+Provider Type,provider_type,Provider type
+Currently Operating,currently_operating,Currently operating status
+Position,position,Staff position
+Career Lattice Level,career_lattice_level,Career lattice professional level

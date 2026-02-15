@@ -1,0 +1,33 @@
+# R user files
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Output data (confidential - never commit)
+output/
+*.duckdb
+*.duckdb.wal
+
+# Raw data files (confidential - never commit)
+data-raw/
+inst/extdata/data/
+
+# Mac files
+.DS_Store
+
+# Build artifacts
+*.tar.gz
+*.Rcheck/
+/doc/
+/Meta/
+
+# Tool config
+.claude/
+
+# Development directory (confidential data, reference packages, large files)
+dev/
+
+# But keep inst/extdata/ mappings and codebooks
+!inst/extdata/mappings/
+!inst/extdata/codebooks/

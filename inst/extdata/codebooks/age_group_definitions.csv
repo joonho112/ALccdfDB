@@ -1,0 +1,5 @@
+group_code,age_min,age_max,label
+infant,0,0.99,Infant (0-11 months)
+toddler,1,2.99,Toddler (1-2 years)
+preschool,3,4.99,Preschool (3-4 years)
+school_age,5,12,School Age (5-12 years)
